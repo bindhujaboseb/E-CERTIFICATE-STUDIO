@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>e-Certificate Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=JetBrains+Mono:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap">
+<style>
+/* Layout: control column on the left, template strip + live A4 preview + export bar on the right; stacks on phones */
+:root{
+  --bg:#F2F3F7; --panel:#FFFFFF; --ink:#151A2D; --muted:#5C6378; --line:#DCDFE9;
+  --accent:#2B44C9; --accent-ink:#FFFFFF; --accent-soft:#E4E8FB; --stage:#E3E6EF;
+  --ok:#137A4B; --warn:#A15C07;
+  --f-ui:'Manrope','Segoe UI',Arial,sans-serif; --f-mono:'JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10131D; --panel:#171B28; --ink:#E7E9F2; --muted:#9AA1B6; --line:#2A3042;
+  --accent:#8EA0FF; --accent-ink:#0E1330; --accent-soft:#232B4D; --stage:#0B0E16;
+  --ok:#5FD39A; --warn:#F2B25C; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#10131D; --panel:#171B28; --ink:#E7E9F2; --muted:#9AA1B6; --line:#2A3042;
+  --accent:#8EA0FF; --accent-ink:#0E1330; --accent-soft:#232B4D; --stage:#0B0E16;
+  --ok:#5FD39A; --warn:#F2B25C; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.5}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:16px;padding-block:18px 40px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:16px}
+header.top h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em}
+header.top p{margin:0;color:var(--muted);font-family:var(--f-mono);font-size:12px;letter-spacing:.04em}
+.steps{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px 22px;margin:8px 0 0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;font-size:13px;color:var(--muted);display:flex;align-items:baseline;gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent);width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;flex:none}
+.steps b{color:var(--ink);font-weight:700}
+.app{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:920px){.app{grid-template-columns:1fr}}
+.controls{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h2{margin:0;font-size:11px;font-family:var(--f-mono);font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+label,.lbl{font-size:12.5px;font-weight:600}
+.hint{font-size:11.5px;color:var(--muted);margin:0}
+.hint code{font-family:var(--f-mono);font-size:11px;background:var(--accent-soft);padding:0 4px;border-radius:3px}
+input[type=text],input[type=date],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px}
+textarea{resize:vertical;min-height:84px}
+#students{font-family:var(--f-mono);font-size:12px;min-height:170px;line-height:1.6}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.file{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.file input{font-size:12px;max-width:100%;color:var(--muted)}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;font-weight:600}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.primary:hover{filter:brightness(1.07)}
+button.link{border:none;background:none;padding:2px 4px;color:var(--accent);font-size:12px}
+button:disabled{opacity:.5;cursor:default}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.chip.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tpls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:1180px){.tpls{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:480px){.tpls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tpl{padding:6px;display:flex;flex-direction:column;gap:6px;text-align:left;border-width:2px}
+.tpl canvas{width:100%;height:auto;aspect-ratio:2000/1414;border-radius:4px;display:block;background:var(--stage)}
+.tpl span{font-size:12px;font-weight:700}
+.tpl small{display:block;font-size:10.5px;color:var(--muted);font-weight:500}
+.tpl[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.stage{background:var(--stage);border-radius:10px;padding:clamp(10px,3vw,28px);display:flex;justify-content:center}
+#preview{width:100%;max-width:1100px;height:auto;aspect-ratio:2000/1414;box-shadow:0 10px 30px rgba(10,15,40,.18);display:block;background:#fff}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.nav{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.nav strong{min-width:150px;text-align:center;font-size:13px}
+.exports{display:flex;flex-wrap:wrap;gap:8px}
+#status{font-size:12.5px;color:var(--muted);min-height:20px;margin:0}
+#status.ok{color:var(--ok)} #status.err{color:var(--warn)}
+.list{display:flex;flex-direction:column;gap:2px;max-height:260px;overflow:auto;margin:0;padding:0;list-style:none;border-top:1px solid var(--line);padding-top:6px}
+.list li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px}
+.list button{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;text-align:left;border:none;background:none;padding:6px 8px;font-weight:500}
+.list button.del{width:auto;padding:4px 8px;color:var(--muted);font-size:16px;line-height:1}
+.list button.del:hover{color:var(--warn)}
+.addform{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:8px;background:var(--bg);border:1px dashed var(--line)}
+.addform input,.addform textarea{background:var(--panel)}
+#addMsg{color:var(--ok)}
+.list button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list button em{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.list button[aria-current=true]{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;border-radius:0;flex:1;padding:6px 8px;font-size:12px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.accent-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+input[type=color]{width:40px;height:30px;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:2px}
+.check{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>e-Certificate Studio</h1>
+    <p>EVERY CLASS · EVERY DIVISION · READY TO SEND</p>
+    <ol class="steps">
+      <li><b>Pick a template</b> and accent colour</li>
+      <li><b>Fill in the details</b> and signatories</li>
+      <li><b>Add your students</b> one by one or upload an Excel sheet</li>
+      <li><b>Download</b> one certificate or the whole list</li>
+    </ol>
+    <p class="hint" style="flex-basis:100%">What you enter is kept only in your own browser. Colleagues using this page will not see your students or settings.</p>
+  </header>
+
+  <div class="app">
+    <aside class="controls">
+      <section class="card" aria-labelledby="h-details">
+        <h2 id="h-details">Certificate details</h2>
+        <div class="field">
+          <label for="school">School name</label>
+          <input type="text" id="school" value="Sharjah Indian School – Juwaiza">
+        </div>
+        <div class="field">
+          <label for="ctype">Certificate type</label>
+          <select id="ctype">
+            <option>Certificate of Achievement</option>
+            <option>Certificate of Merit</option>
+            <option>Certificate of Participation</option>
+            <option>Certificate of Excellence</option>
+            <option>Certificate of Appreciation</option>
+            <option value="__custom">Custom title…</option>
+          </select>
+          <input type="text" id="ctypeCustom" placeholder="e.g. Coding Champion" hidden>
+        </div>
+        <div class="field">
+          <label for="event">Event or reason</label>
+          <input type="text" id="event" value="CodeFest 2026 – Inter-House Coding Challenge">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="date">Date</label>
+            <input type="date" id="date" value="2026-10-01">
+          </div>
+          <div class="field">
+            <label for="lead">Opening line</label>
+            <input type="text" id="lead" value="This certificate is proudly presented to">
+          </div>
+        </div>
+        <div class="field">
+          <label for="body">Citation text</label>
+          <textarea id="body" placeholder="e.g. for securing First Place in {event}, held on {date}."></textarea>
+          <p class="hint">Printed on every certificate. Left blank, the certificate prints ruled lines to write on by hand. You can use <code>{name}</code> <code>{class}</code> <code>{division}</code> <code>{event}</code> <code>{date}</code>.</p>
+        </div>
+        <div class="field">
+          <span class="lbl">School logo (optional)</span>
+          <div class="file"><input type="file" id="logoFile" accept="image/*" aria-label="Upload school logo"><button class="link" id="logoClear" hidden>Remove</button></div>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="showNo" checked> Print certificate numbers</label>
+          <input type="text" id="noPrefix" value="SISJ/2026/" aria-label="Certificate number prefix">
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-sig">
+        <h2 id="h-sig">Signatories</h2>
+        <div class="row">
+          <div class="field"><label for="s1name">Left — name</label><input type="text" id="s1name" value="" placeholder="e.g. Class teacher's name"></div>
+          <div class="field"><label for="s1title">Left — role</label><input type="text" id="s1title" value="Class Teacher"></div>
+        </div>
+        <div class="file"><input type="file" id="s1file" accept="image/*" aria-label="Upload left signature image"><button class="link" id="s1clear" hidden>Remove</button></div>
+        <div class="row">
+          <div class="field"><label for="s2name">Right — name</label><input type="text" id="s2name" value=""></div>
+          <div class="field"><label for="s2title">Right — role</label><input type="text" id="s2title" value="Principal"></div>
+        </div>
+        <div class="file"><input type="file" id="s2file" accept="image/*" aria-label="Upload right signature image"><button class="link" id="s2clear" hidden>Remove</button></div>
+        <p class="hint">Signature images work best as a PNG with a transparent background.</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-stu">
+        <div class="head-row">
+          <h2 id="h-stu">Students</h2>
+          <span class="chip warn" id="sampleChip">Sample names</span>
+        </div>
+        <div class="addform">
+          <div class="field"><label for="addName">Student name</label><input type="text" id="addName" placeholder="e.g. Aarav Menon"></div>
+          <div class="row">
+            <div class="field"><label for="addClass">Class</label><input type="text" id="addClass" placeholder="e.g. 7 or VII"></div>
+            <div class="field"><label for="addDiv">Division</label><input type="text" id="addDiv" placeholder="e.g. B"></div>
+          </div>
+          <div class="head-row"><button class="primary" id="addBtn">Add student</button><span class="hint" id="addMsg"></span></div>
+        </div>
+        <div class="field">
+          <label for="students">Student list — one per line: Name, Class, Division</label>
+          <textarea id="students" spellcheck="false"></textarea>
+          <p class="hint">Edit lines here, paste from Excel, or upload a sheet with the same three columns.</p>
+        </div>
+        <div class="file"><input type="file" id="sheetFile" accept=".xlsx,.xls,.csv" aria-label="Upload student list from Excel or CSV"></div>
+        <div class="field">
+          <label for="classFilter">Generate for</label>
+          <select id="classFilter"><option value="all">All classes</option></select>
+        </div>
+        <p class="hint" id="count"></p>
+        <ul class="list" id="list"></ul>
+      </section>
+    </aside>
+
+    <section class="main" aria-label="Design and preview">
+      <div class="card">
+        <div class="head-row">
+          <h2>Choose a template</h2>
+          <div class="accent-row">
+            <label for="accent" style="font-size:12px">Accent colour</label>
+            <input type="color" id="accent">
+            <button class="link" id="accentReset">Use template colour</button>
+          </div>
+        </div>
+        <div class="tpls" id="tpls"></div>
+      </div>
+
+      <div class="stage"><canvas id="preview" width="2000" height="1414" aria-label="Certificate preview"></canvas></div>
+
+      <div class="card">
+        <div class="bar">
+          <div class="nav">
+            <button id="prev" aria-label="Previous student">‹</button>
+            <strong id="navLbl">—</strong>
+            <button id="next" aria-label="Next student">›</button>
+          </div>
+          <div class="exports">
+            <button id="dPng">This one · PNG</button>
+            <button id="dPdf">This one · PDF</button>
+            <button class="primary" id="dAllPdf">All · one PDF</button>
+            <button class="primary" id="dZip">All · ZIP of PNGs</button>
+          </div>
+        </div>
+        <div class="progress" hidden id="prog"><i></i></div>
+        <p id="status" role="status"></p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+const W=2000,H=1414;
+const F={cinzel:"'Cinzel', Georgia, serif",script:"'Great Vibes', 'Brush Script MT', cursive",garamond:"'Cormorant Garamond', Georgia, serif",sans:"'Manrope', 'Segoe UI', Arial, sans-serif",mono:"'JetBrains Mono', Consolas, monospace"};
+
+const SAMPLE=`Aarav Menon, 5, A
+Diya Krishnan, 6, B
+Fatima Rahman, 7, C
+Rohan Pillai, 8, A
+Sara Thomas, 9, B
+Yusuf Ali, 10, A`;
+
+/* ---------- canvas helpers ---------- */
+function font(ctx,w,s,f,style){ctx.font=((style||'')+' '+w+' '+s+'px '+f).trim();}
+function sp(ctx,v){if('letterSpacing' in ctx) ctx.letterSpacing=v+'px';}
+function fit(ctx,text,maxW,w,size,f,style,min){let s=size;font(ctx,w,s,f,style);while(ctx.measureText(text).width>maxW&&s>(min||22)){s-=2;font(ctx,w,s,f,style);}return s;}
+function wrap(ctx,text,maxW){const words=text.split(/\s+/).filter(Boolean),lines=[];let line='';for(const w of words){const t=line?line+' '+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}if(line)lines.push(line);return lines;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hexA(hex,al){const h=hex.replace('#','');const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${al})`;}
+function splitTitle(t){const m=t.match(/^(certificate)\s+(of\s+.+)$/i);return m?[m[1],m[2]]:[t,''];}
+function initials(s){const r=s.split(/[\s–\-]+/).filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).join('').slice(0,4);return r||'CERT';}
+
+function drawSeal(ctx,x,y,r,fill,ring,label,year){
+  ctx.save();
+  ctx.fillStyle=fill;
+  for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(x+s*.12*r,y+.3*r);ctx.lineTo(x+s*.58*r,y+.3*r);ctx.lineTo(x+s*.74*r,y+1.5*r);ctx.lineTo(x+s*.5*r,y+1.3*r);ctx.lineTo(x+s*.3*r,y+1.55*r);ctx.closePath();ctx.globalAlpha=.88;ctx.fill();}
+  ctx.globalAlpha=1;ctx.beginPath();
+  const n=32;for(let i=0;i<=n*2;i++){const ang=i*Math.PI/n-Math.PI/2,rr=i%2?r*.9:r;ctx.lineTo(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr);}
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle=ring;ctx.lineWidth=r*.05;ctx.beginPath();ctx.arc(x,y,r*.74,0,Math.PI*2);ctx.stroke();
+  ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r*.64,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle=ring;ctx.textAlign='center';ctx.textBaseline='middle';
+  sp(ctx,2);fit(ctx,label,r*1.05,700,r*.34,F.cinzel,'',12);ctx.fillText(label,x,y-r*.06);
+  sp(ctx,3);font(ctx,700,r*.15,F.sans);ctx.fillText(year,x,y+r*.3);sp(ctx,0);
+  ctx.restore();
+}
+
+/* ---------- shared text layout ---------- */
+function drawContent(ctx,d,s){
+  const L=s.align==='left',x=s.x,c=s.c;
+  ctx.textAlign=L?'left':'center';ctx.textBaseline='alphabetic';
+  let y=s.top;
+  if(d.logo){const sz=125,r=Math.min(sz/d.logo.width,sz/d.logo.height),w=d.logo.width*r,h=d.logo.height*r;ctx.drawImage(d.logo,L?x:x-w/2,y,w,h);y+=h+52;}else y+=30;
+  ctx.fillStyle=c.muted;sp(ctx,6);fit(ctx,d.school.toUpperCase(),s.maxW,700,30,F.sans);ctx.fillText(d.school.toUpperCase(),x,y);sp(ctx,0);
+  y+=s.titleGap||112;
+  const [main,sub]=splitTitle(d.type);
+  sp(ctx,s.titleSpacing??12);fit(ctx,main.toUpperCase(),s.maxW,s.titleWeight||700,s.titleSize||112,s.titleFont);ctx.fillStyle=c.title;ctx.fillText(main.toUpperCase(),x,y);
+  if(sub){y+=68;sp(ctx,11);fit(ctx,sub.toUpperCase(),s.maxW,700,38,s.subFont||F.sans);ctx.fillStyle=c.accent;ctx.fillText(sub.toUpperCase(),x,y);}
+  sp(ctx,0);
+  y+=100;
+  ctx.fillStyle=c.text;fit(ctx,d.lead,s.maxW,500,38,s.leadFont||s.bodyFont,'italic');ctx.fillText(d.lead,x,y);
+  y+=s.nameGap||150;
+  ctx.fillStyle=c.name;fit(ctx,d.name,s.maxW,s.nameWeight||400,s.nameSize||140,s.nameFont,s.nameStyle||'',40);ctx.fillText(d.name,x,y);
+  y+=42;
+  ctx.strokeStyle=c.rule||c.accent;ctx.lineWidth=3;ctx.beginPath();const rw=Math.min(900,s.maxW);ctx.moveTo(L?x:x-rw/2,y);ctx.lineTo(L?x+rw:x+rw/2,y);ctx.stroke();
+  if(d.classLine){y+=60;ctx.fillStyle=c.accent;sp(ctx,6);fit(ctx,d.classLine.toUpperCase(),s.maxW,700,30,s.subFont||F.sans);ctx.fillText(d.classLine.toUpperCase(),x,y);sp(ctx,0);y+=74;}
+  else y+=78;
+  const lh=(s.bodySize||36)*1.48;
+  if(d.body){
+    ctx.fillStyle=c.text;font(ctx,s.bodyWeight||500,s.bodySize||36,s.bodyFont);
+    const lines=wrap(ctx,d.body,s.maxW*(s.bodyWrap||.86));
+    for(const ln of lines.slice(0,3)){ctx.fillText(ln,x,y);y+=lh;}
+  }else{
+    const bw=s.maxW*.8;ctx.save();ctx.strokeStyle=c.line||c.muted;ctx.lineWidth=2;ctx.setLineDash([3,9]);
+    for(let k=0;k<2;k++){const ly=y+6+k*lh*1.15;ctx.beginPath();ctx.moveTo(L?x:x-bw/2,ly);ctx.lineTo(L?x+bw:x+bw/2,ly);ctx.stroke();}
+    ctx.restore();
+  }
+  // signatures
+  const sigs=d.sigs.filter(g=>g.name||g.title||g.img);
+  const xs=sigs.length===1?[s.sigXs[1]]:s.sigXs;
+  ctx.textAlign='center';
+  sigs.forEach((g,i)=>{
+    const sx=xs[i],ly=s.sigY;
+    if(g.img){const r=Math.min(300/g.img.width,110/g.img.height),w=g.img.width*r,h=g.img.height*r;ctx.drawImage(g.img,sx-w/2,ly-8-h,w,h);}
+    ctx.strokeStyle=c.line||c.muted;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx-180,ly);ctx.lineTo(sx+180,ly);ctx.stroke();
+    if(g.name){ctx.fillStyle=c.name;fit(ctx,g.name,400,700,28,F.sans);ctx.fillText(g.name,sx,ly+42);}
+    if(g.title){ctx.fillStyle=c.muted;fit(ctx,g.title,400,500,24,F.sans);ctx.fillText(g.title,sx,ly+(g.name?78:42));}
+  });
+  if(d.certNo&&s.certPos){const [cx,cy,al]=s.certPos;ctx.textAlign=al;ctx.fillStyle=c.muted;sp(ctx,2);font(ctx,600,20,F.mono);ctx.fillText('NO. '+d.certNo,cx,cy);sp(ctx,0);}
+}
+
+/* ---------- templates ---------- */
+const TPL={
+  heritage:{name:'Heritage Gold',note:'Formal, gold frame',accent:'#B08D3C',
+    bg(ctx,a,d){
+      ctx.fillStyle='#FBF6E9';ctx.fillRect(0,0,W,H);
+      const g=ctx.createRadialGradient(W/2,H/2,300,W/2,H/2,1300);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(1,hexA(a,.14));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle=a;ctx.lineWidth=8;ctx.strokeRect(48,48,W-96,H-96);ctx.lineWidth=2;ctx.strokeRect(74,74,W-148,H-148);
+      for(const [cx,cy,sx,sy] of [[74,74,1,1],[W-74,74,-1,1],[74,H-74,1,-1],[W-74,H-74,-1,-1]]){
+        ctx.save();ctx.translate(cx,cy);ctx.scale(sx,sy);ctx.strokeStyle=a;ctx.fillStyle=a;ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(22,22);ctx.lineTo(220,22);ctx.moveTo(22,22);ctx.lineTo(22,220);ctx.stroke();
+        ctx.beginPath();ctx.arc(22,22,70,0,Math.PI/2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(44,30);ctx.lineTo(58,44);ctx.lineTo(44,58);ctx.lineTo(30,44);ctx.closePath();ctx.fill();
+        ctx.beginPath();ctx.arc(232,22,5,0,Math.PI*2);ctx.arc(22,232,5,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      }
+      drawSeal(ctx,W/2,1170,88,a,'#FBF6E9',initials(d.school),d.year);
+    },
+    style:a=>({x:W/2,top:150,maxW:1480,titleFont:F.cinzel,titleSize:112,nameFont:F.script,nameSize:150,bodyFont:F.garamond,bodySize:40,bodyWeight:500,sigY:1185,sigXs:[470,1530],certPos:[110,H-104,'left'],c:{title:'#1D2A44',name:'#1D2A44',text:'#2E3648',muted:'#6E6553',accent:a,line:'#8C8270'}})},
+
+  circuit:{name:'Circuit Board',note:'Dark, tech traces',accent:'#3BD1C6',
+    bg(ctx,a){
+      const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#0A1424');g.addColorStop(1,'#12283F');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(255,255,255,.05)';for(let x=40;x<W;x+=40)for(let y=40;y<H;y+=40)ctx.fillRect(x,y,2,2);
+      const rnd=mulberry32(11);ctx.lineCap='round';ctx.lineJoin='round';
+      for(let i=0;i<95;i++){
+        const e=Math.floor(rnd()*4);let x,y,dx,dy,depth;
+        if(e===0){x=60+rnd()*(W-120);y=0;dx=0;dy=1;depth=50+rnd()*55;}
+        else if(e===1){x=W;y=60+rnd()*(H-120);dx=-1;dy=0;depth=80+rnd()*140;}
+        else if(e===2){x=60+rnd()*(W-120);y=H;dx=0;dy=-1;depth=50+rnd()*55;}
+        else{x=0;y=60+rnd()*(H-120);dx=1;dy=0;depth=80+rnd()*140;}
+        const side=rnd()<.5?-1:1,d2=18+rnd()*36,run=30+rnd()*150;
+        ctx.globalAlpha=.3+rnd()*.45;ctx.strokeStyle=a;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y);
+        x+=dx*depth;y+=dy*depth;ctx.lineTo(x,y);
+        x+=dx*d2+(dy?side*d2:0);y+=dy*d2+(dx?side*d2:0);ctx.lineTo(x,y);
+        x+=dy?side*run:0;y+=dx?side*run:0;ctx.lineTo(x,y);ctx.stroke();
+        ctx.fillStyle='#0E1E32';ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+      ctx.strokeStyle=hexA(a,.35);ctx.lineWidth=2;ctx.strokeRect(120,120,W-240,H-240);
+      ctx.strokeStyle=a;ctx.lineWidth=5;
+      for(const [cx,cy,sx,sy] of [[120,120,1,1],[W-120,120,-1,1],[120,H-120,1,-1],[W-120,H-120,-1,-1]]){ctx.beginPath();ctx.moveTo(cx,cy+sy*60);ctx.lineTo(cx,cy);ctx.lineTo(cx+sx*60,cy);ctx.stroke();}
+      ctx.fillStyle=hexA(a,.85);font(ctx,600,24,F.mono);ctx.textAlign='left';ctx.fillText('<certificate>',150,170);ctx.textAlign='right';ctx.fillText('</certificate>',W-150,H-148);
+    },
+    style:a=>({x:W/2,top:175,maxW:1380,titleFont:F.mono,titleWeight:800,titleSize:100,titleSpacing:10,subFont:F.mono,nameFont:F.sans,nameWeight:800,nameSize:118,nameGap:140,bodyFont:F.sans,bodySize:34,sigY:1165,sigXs:[520,1480],certPos:[150,H-148,'left'],c:{title:'#EAF4FB',name:'#FFFFFF',text:'#B9CBDC',muted:'#86A0B8',accent:a,line:hexA(a,.7)}})},
+
+  band:{name:'Modern Band',note:'Grade number in a side band',accent:'#0F766E',
+    bg(ctx,a,d){
+      ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=a;ctx.fillRect(0,0,400,H);
+      ctx.save();ctx.beginPath();ctx.rect(0,0,400,H);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=22;
+      for(let i=-H;i<400+H;i+=64){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+H,H);ctx.stroke();}ctx.restore();
+      ctx.fillStyle=hexA(a,.9);ctx.fillRect(W-16,0,16,H);
+      ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.85)';sp(ctx,12);font(ctx,700,34,F.sans);ctx.fillText('CLASS',200,250);sp(ctx,0);
+      const cv=d.cls||'—';ctx.fillStyle='#FFFFFF';fit(ctx,cv,320,800,280,F.sans,'',60);ctx.fillText(cv,200,520);
+      if(d.division){sp(ctx,8);fit(ctx,'DIVISION '+d.division.toUpperCase(),330,600,30,F.mono);ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillText('DIVISION '+d.division.toUpperCase(),200,590);sp(ctx,0);}
+      font(ctx,600,26,F.mono);ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText(d.session,200,H-110);
+    },
+    style:a=>({align:'left',x:520,top:150,maxW:1360,titleFont:F.sans,titleWeight:800,titleSize:104,titleSpacing:4,subFont:F.mono,nameFont:F.garamond,nameStyle:'italic',nameWeight:600,nameSize:150,bodyFont:F.sans,bodySize:34,bodyWrap:.92,sigY:1180,sigXs:[720,1360],certPos:[W-60,H-50,'right'],c:{title:'#10212B',name:'#10212B',text:'#3A4A55',muted:'#6B7A85',accent:a,line:'#9AA6AE'}})},
+
+  pixel:{name:'Pixel Arcade',note:'Playful, coding club',accent:'#7C3AED',
+    bg(ctx,a){
+      ctx.fillStyle='#F4F1FF';ctx.fillRect(0,0,W,H);
+      const s=36,cols=Math.ceil(W/s),rows=Math.ceil(H/s),pal=[a,'#F59E0B','#10B981','#3B82F6','#EF4444'];
+      for(let c=0;c<cols;c++)for(let r=0;r<rows;r++){if(r<2||r>=rows-2||c<2||c>=cols-2){const k=(c*3+r*5)%7;if(k<5){ctx.fillStyle=pal[k];ctx.fillRect(c*s,r*s,s-3,s-3);}}}
+      ctx.fillStyle='#1E1B4B';ctx.fillRect(122,122,W-216,H-216);
+      ctx.fillStyle='#FFFFFF';ctx.fillRect(108,108,W-216,H-216);ctx.strokeStyle='#1E1B4B';ctx.lineWidth=6;ctx.strokeRect(108,108,W-216,H-216);
+      const star=(x,y,col)=>{ctx.fillStyle=col;for(const [i,j] of [[0,-2],[0,-1],[-2,0],[-1,0],[0,0],[1,0],[2,0],[0,1],[0,2]])ctx.fillRect(x+i*12,y+j*12,12,12);};
+      star(190,190,'#F59E0B');star(W-202,190,a);star(190,H-202,a);star(W-202,H-202,'#F59E0B');
+    },
+    style:a=>({x:W/2,top:160,maxW:1440,titleFont:F.mono,titleWeight:800,titleSize:100,titleSpacing:8,subFont:F.mono,nameFont:F.sans,nameWeight:800,nameSize:118,nameGap:140,bodyFont:F.sans,bodySize:34,sigY:1160,sigXs:[500,1500],certPos:[140,H-138,'left'],c:{title:'#1E1B4B',name:'#1E1B4B',text:'#3D3A66',muted:'#6A6790',accent:a,line:'#1E1B4B'}})},
+
+  ribbon:{name:'Royal Ribbon',note:'Maroon frame, rosette',accent:'#7A1F2B',
+    bg(ctx,a,d){
+      ctx.fillStyle='#FFFDF8';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=hexA(a,.05);for(let x=120;x<W-100;x+=64)for(let y=120;y<H-100;y+=64){ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.lineTo(x-7,y);ctx.fill();}
+      ctx.strokeStyle=a;ctx.lineWidth=30;ctx.strokeRect(40,40,W-80,H-80);
+      ctx.strokeStyle='#C9A13B';ctx.lineWidth=3;ctx.strokeRect(72,72,W-144,H-144);ctx.lineWidth=2;ctx.strokeRect(25,25,W-50,H-50);
+      ctx.fillStyle='#C9A13B';for(const [x,y] of [[40,40],[W-40,40],[40,H-40],[W-40,H-40]])ctx.fillRect(x-22,y-22,44,44);
+      ctx.fillStyle=a;for(const [x,y] of [[40,40],[W-40,40],[40,H-40],[W-40,H-40]])ctx.fillRect(x-10,y-10,20,20);
+      drawSeal(ctx,W/2,1165,92,a,'#E2C26C',initials(d.school),d.year);
+    },
+    style:a=>({x:W/2,top:150,maxW:1460,titleFont:F.garamond,titleWeight:700,titleSize:126,titleSpacing:16,subFont:F.sans,nameFont:F.script,nameSize:150,bodyFont:F.garamond,bodySize:40,sigY:1185,sigXs:[470,1530],certPos:[W-110,H-100,'right'],c:{title:a,name:'#2A1A1C',text:'#3B2E2F',muted:'#7D6A60',accent:'#A8832B',rule:'#C9A13B',line:'#9D8A7E'}})},
+
+  minimal:{name:'Clean Minimal',note:'Quiet, lots of space',accent:'#3346C4',
+    bg(ctx,a,d){
+      ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,W,H);
+      if(d.cls){ctx.fillStyle=hexA(a,.06);fit(ctx,d.cls,1100,800,820,F.sans,'',200);ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText(d.cls,W-50,H-40);}
+      ctx.fillStyle=a;ctx.fillRect(0,0,W,18);ctx.fillRect(110,110,26,26);
+      ctx.fillStyle=hexA(a,.3);ctx.fillRect(110,H-90,W-220,2);
+    },
+    style:a=>({x:W/2,top:150,maxW:1440,titleFont:F.sans,titleWeight:300,titleSize:110,titleSpacing:28,nameFont:F.garamond,nameWeight:600,nameSize:146,bodyFont:F.sans,bodyWeight:400,bodySize:34,sigY:1170,sigXs:[520,1480],certPos:[W-110,H-50,'right'],c:{title:'#141826',name:'#141826',text:'#4A5163',muted:'#7A8194',accent:a,line:'#B8BDCB'}})}
+};
+const ORDER=['heritage','circuit','band','pixel','ribbon','minimal'];
+
+function drawCert(ctx,id,d){const t=TPL[id],a=d.accent||t.accent;ctx.save();t.bg(ctx,a,d);drawContent(ctx,d,t.style(a,d));ctx.restore();}
+
+/* ---------- state ---------- */
+const $=id=>document.getElementById(id);
+const st={tpl:'heritage',accent:null,filter:'all',idx:0,logo:null,sigImg:[null,null],sample:true,logoSrc:null,sigSrc:[null,null]};
+const TEXT_IDS=['school','ctype','ctypeCustom','event','date','lead','body','s1name','s1title','s2name','s2title','noPrefix','students'];
+
+function store(k,v){try{localStorage.setItem('ecs2.'+k,v);}catch(e){}}
+function load(k){try{return localStorage.getItem('ecs2.'+k);}catch(e){return null;}}
+
+function fmtDate(v){if(!v)return '';const dt=new Date(v+'T00:00:00');return isNaN(dt)?v:dt.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});}
+function yearOf(v){const y=(v||'').slice(0,4);return /^\d{4}$/.test(y)?y:String(new Date().getFullYear());}
+function sessionOf(v){const dt=new Date((v||'')+'T00:00:00');if(isNaN(dt))return '';const y=dt.getFullYear(),m=dt.getMonth();const s=m>=3?y:y-1;return s+'–'+String((s+1)%100).padStart(2,'0');}
+
+function cleanCls(v){return String(v||'').trim().replace(/^(class|grade|std\.?|standard)\s*/i,'');}
+function parseStudents(text){
+  const out=[];
+  text.split(/\r?\n/).forEach((line,i)=>{
+    if(!line.trim())return;
+    const p=line.split(/\t|,/).map(s=>s.trim());
+    if(i===0&&/^(student\s*)?name$/i.test(p[0]))return;
+    if(!p[0])return;
+    out.push({line:i,name:p[0],cls:cleanCls(p[1]),division:(p[2]||'').toUpperCase()});
+  });
+  return out;
+}
+function visible(){const all=parseStudents($('students').value);return st.filter==='all'?all:all.filter(s=>s.cls===st.filter);}
+
+function certType(){return $('ctype').value==='__custom'?($('ctypeCustom').value.trim()||'Certificate'):$('ctype').value;}
+
+function classLine(stu){const a=[];if(stu.cls)a.push('Class '+stu.cls);if(stu.division)a.push('Division '+stu.division);return a.join('  ·  ');}
+function dataFor(stu,i){
+  const event=$('event').value.trim(),date=fmtDate($('date').value);
+  const src=$('body').value;
+  const body=src.replace(/\{(\w+)\}/g,(m,k)=>({name:stu.name,class:stu.cls,division:stu.division,event,date}[k]??m)).replace(/\s+/g,' ').replace(/\s+([,.])/g,'$1').trim();
+  return {school:$('school').value.trim(),type:certType(),lead:$('lead').value.trim(),name:stu.name,body,cls:stu.cls,division:stu.division,classLine:classLine(stu),
+    year:yearOf($('date').value),session:sessionOf($('date').value),logo:st.logo,accent:st.accent,
+    certNo:$('showNo').checked?$('noPrefix').value+String(i+1).padStart(3,'0'):'',
+    sigs:[{name:$('s1name').value.trim(),title:$('s1title').value.trim(),img:st.sigImg[0]},{name:$('s2name').value.trim(),title:$('s2title').value.trim(),img:st.sigImg[1]}]};
+}
+const PLACEHOLDER={name:'Student Name',cls:'7',division:'A'};
+
+/* ---------- rendering ---------- */
+const pv=$('preview'),pctx=pv.getContext('2d');
+const thumbs={};
+function buildThumbs(){
+  const box=$('tpls');
+  ORDER.forEach(id=>{
+    const b=document.createElement('button');b.className='tpl';b.dataset.id=id;b.setAttribute('aria-pressed',id===st.tpl);
+    const c=document.createElement('canvas');c.width=400;c.height=283;thumbs[id]=c;
+    const lbl=document.createElement('span');lbl.innerHTML=TPL[id].name+'<small>'+TPL[id].note+'</small>';
+    b.append(c,lbl);b.onclick=()=>{st.tpl=id;st.accent=null;store('tpl',id);store('accent','');syncTpl();render();};
+    box.appendChild(b);
+  });
+}
+function syncTpl(){
+  document.querySelectorAll('.tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===st.tpl));
+  $('accent').value=st.accent||TPL[st.tpl].accent;
+}
+let raf=0,thumbT=0;
+function render(){cancelAnimationFrame(raf);raf=requestAnimationFrame(doRender);clearTimeout(thumbT);thumbT=setTimeout(doThumbs,220);}
+function current(){const v=visible();if(st.idx>=v.length)st.idx=Math.max(0,v.length-1);return {v,stu:v[st.idx]||PLACEHOLDER};}
+function doRender(){
+  const {v,stu}=current();
+  pctx.setTransform(1,0,0,1,0,0);pctx.clearRect(0,0,W,H);drawCert(pctx,st.tpl,dataFor(stu,st.idx));
+  $('navLbl').textContent=v.length?`${st.idx+1} of ${v.length} · ${stu.name}`:'No students';
+  $('prev').disabled=st.idx<=0;$('next').disabled=st.idx>=v.length-1;
+  renderList(v);
+}
+function doThumbs(){
+  const {stu}=current();
+  ORDER.forEach(id=>{const c=thumbs[id],x=c.getContext('2d');x.setTransform(.2,0,0,.2,0,0);x.clearRect(0,0,W,H);const d=dataFor(stu,st.idx);d.accent=id===st.tpl?st.accent:null;drawCert(x,id,d);});
+}
+function natSort(a,b){return a.localeCompare(b,undefined,{numeric:true});}
+function syncFilter(all){
+  const sel=$('classFilter'),classes=[...new Set(all.map(s=>s.cls).filter(Boolean))].sort(natSort);
+  if(st.filter!=='all'&&!classes.includes(st.filter))st.filter='all';
+  const want=['all',...classes].join('|');
+  if(sel.dataset.k!==want){sel.innerHTML='';const o=new Option('All classes','all');sel.add(o);classes.forEach(c=>sel.add(new Option('Class '+c,c)));sel.dataset.k=want;}
+  sel.value=st.filter;
+}
+function renderList(v){
+  const all=parseStudents($('students').value);syncFilter(all);
+  const n=new Set(all.map(s=>s.cls).filter(Boolean)).size;
+  $('count').textContent=`${all.length} student${all.length===1?'':'s'} across ${n} class${n===1?'':'es'}`+(st.filter!=='all'?` — showing Class ${st.filter} (${v.length})`:'');
+  const ul=$('list');ul.innerHTML='';
+  v.forEach((s,i)=>{const li=document.createElement('li'),b=document.createElement('button');b.setAttribute('aria-current',i===st.idx);
+    const nm=document.createElement('span');nm.textContent=s.name;const m=document.createElement('em');m.textContent=[s.cls&&'Class '+s.cls,s.division&&'Div '+s.division].filter(Boolean).join(' · ');
+    b.append(nm,m);b.onclick=()=>{st.idx=i;render();};
+    const del=document.createElement('button');del.className='del';del.textContent='×';del.setAttribute('aria-label','Remove '+s.name);
+    del.onclick=()=>{const lines=$('students').value.split(/\r?\n/);lines.splice(s.line,1);setStudents(lines.join('\n'));};
+    li.append(b,del);ul.appendChild(li);});
+}
+function setStudents(txt){$('students').value=txt;store('students',txt);st.sample=false;store('sample','0');$('sampleChip').hidden=true;render();}
+$('addBtn').onclick=()=>{
+  const name=$('addName').value.trim().replace(/[,\t]/g,' ');
+  if(!name){$('addMsg').textContent='Enter the student’s name first.';$('addMsg').style.color='var(--warn)';$('addName').focus();return;}
+  const cls=cleanCls($('addClass').value).replace(/[,\t]/g,' '),div=$('addDiv').value.trim().replace(/[,\t]/g,' ');
+  const line=[name,cls,div].join(', ');
+  const base=st.sample?'':$('students').value.replace(/\s+$/,'');
+  setStudents(base?base+'\n'+line:line);
+  st.filter='all';st.idx=visible().length-1;render();
+  $('addName').value='';$('addMsg').style.color='';$('addMsg').textContent=`Added ${name}.`;$('addName').focus();
+};
+['addName','addClass','addDiv'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('addBtn').click();}}));
+
+/* ---------- inputs ---------- */
+function readImg(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>res({im,src:r.result});im.onerror=rej;im.src=r.result;};r.onerror=rej;r.readAsDataURL(file);});}
+function imgFromSrc(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});}
+function bindImg(fileId,clearId,set,key){
+  $(fileId).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const {im,src}=await readImg(f);set(im);store(key,src);$(clearId).hidden=false;render();}catch(err){status('That image could not be read. Try a PNG or JPG file.','err');}};
+  $(clearId).onclick=()=>{set(null);store(key,'');$(fileId).value='';$(clearId).hidden=true;render();};
+}
+bindImg('logoFile','logoClear',im=>st.logo=im,'logo');
+bindImg('s1file','s1clear',im=>st.sigImg[0]=im,'sig1');
+bindImg('s2file','s2clear',im=>st.sigImg[1]=im,'sig2');
+
+TEXT_IDS.forEach(id=>{$(id).addEventListener('input',()=>{store(id,$(id).value);if(id==='students'){st.sample=false;store('sample','0');$('sampleChip').hidden=true;}if(id==='ctype')$('ctypeCustom').hidden=$('ctype').value!=='__custom';render();});});
+$('ctype').addEventListener('change',()=>{$('ctypeCustom').hidden=$('ctype').value!=='__custom';store('ctype',$('ctype').value);render();});
+$('showNo').onchange=()=>{store('showNo',$('showNo').checked?'1':'0');render();};
+$('accent').oninput=e=>{st.accent=e.target.value;store('accent',st.accent);render();};
+$('accentReset').onclick=()=>{st.accent=null;store('accent','');syncTpl();render();};
+$('classFilter').onchange=e=>{st.filter=e.target.value;st.idx=0;render();};
+$('prev').onclick=()=>{st.idx--;render();};$('next').onclick=()=>{st.idx++;render();};
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowLeft'&&st.idx>0){st.idx--;render();}if(e.key==='ArrowRight'){st.idx++;render();}});
+
+$('sheetFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    let rows;
+    if(/\.csv$/i.test(f.name)){rows=(await f.text()).split(/\r?\n/).map(l=>l.split(','));}
+    else{if(!window.XLSX)throw new Error('reader');const wb=XLSX.read(await f.arrayBuffer());rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});}
+    const txt=rows.filter(r=>r.some(c=>String(c).trim())).map(r=>r.slice(0,3).map(c=>String(c).trim()).join(', ')).join('\n');
+    $('students').value=txt;store('students',txt);st.sample=false;store('sample','0');$('sampleChip').hidden=true;st.idx=0;
+    const n=parseStudents(txt).length;status(`Loaded ${n} students from ${f.name}.`,'ok');render();
+  }catch(err){status('That file could not be read. Use .xlsx or .csv with columns Name, Grade, Section, Position.','err');}
+};
+
+/* ---------- export ---------- */
+const dlP=(async()=>{try{return window.claude&&window.claude.use?await window.claude.use('downloads'):null;}catch(e){return null;}})();
+function status(msg,kind){const s=$('status');s.textContent=msg;s.className=kind||'';}
+function slug(s){return String(s).replace(/[^\w]+/g,'_').replace(/^_|_$/g,'');}
+function fileName(stu,ext){return `Certificate_${slug(stu.name)}${stu.cls?'_Class'+slug(stu.cls):''}${stu.division?slug(stu.division):''}.${ext}`;}
+function canvasFor(stu,i){const c=document.createElement('canvas');c.width=W;c.height=H;drawCert(c.getContext('2d'),st.tpl,dataFor(stu,i));return c;}
+const toBlob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
+function newPdf(){return new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});}
+function addPage(pdf,c){pdf.addImage(c.toDataURL('image/jpeg',.93),'JPEG',0,0,297,210);}
+async function save(filename,data){
+  const dl=await dlP;
+  if(!dl){
+    try{const blob=data instanceof Blob?data:new Blob([data]);const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);status(`Downloaded ${filename}`,'ok');}
+    catch(e){status('The file could not be downloaded. Please try another browser.','err');}
+    return;
+  }
+  try{await dl.save({filename,data});status(`Saved ${filename}`,'ok');}
+  catch(e){status(e&&e.code==='declined'?'Download cancelled.':e&&e.code==='rate_limited'?'A download prompt is already open.':'The file could not be saved. Please try again.','err');}
+}
+const prog=$('prog'),bar=prog.querySelector('i');
+let busy=false;
+function lock(on){busy=on;['dPng','dPdf','dAllPdf','dZip'].forEach(id=>$(id).disabled=on);prog.hidden=!on;bar.style.width='0';}
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+$('dPng').onclick=async()=>{const {v,stu}=current();if(!v.length)return status('Add at least one student first.','err');lock(true);const b=await toBlob(canvasFor(stu,st.idx),'image/png');lock(false);save(fileName(stu,'png'),b);};
+$('dPdf').onclick=async()=>{const {v,stu}=current();if(!v.length)return status('Add at least one student first.','err');lock(true);const pdf=newPdf();addPage(pdf,canvasFor(stu,st.idx));lock(false);save(fileName(stu,'pdf'),pdf.output('blob'));};
+function batchName(ext){return `Certificates_${st.filter==='all'?'All_classes':'Class_'+slug(st.filter)}_${$('date').value||'all'}.${ext}`;}
+$('dAllPdf').onclick=async()=>{
+  const v=visible();if(!v.length)return status('Add at least one student first.','err');
+  lock(true);const pdf=newPdf();
+  for(let i=0;i<v.length;i++){if(i)pdf.addPage();addPage(pdf,canvasFor(v[i],i));bar.style.width=((i+1)/v.length*100)+'%';status(`Building ${i+1} of ${v.length}…`);await tick();}
+  lock(false);save(batchName('pdf'),pdf.output('blob'));
+};
+$('dZip').onclick=async()=>{
+  const v=visible();if(!v.length)return status('Add at least one student first.','err');
+  lock(true);const zip=new JSZip();
+  for(let i=0;i<v.length;i++){zip.file(fileName(v[i],'png'),await toBlob(canvasFor(v[i],i),'image/png'));bar.style.width=((i+1)/v.length*100)+'%';status(`Building ${i+1} of ${v.length}…`);await tick();}
+  status('Compressing…');const blob=await zip.generateAsync({type:'blob'});lock(false);save(batchName('zip'),blob);
+};
+
+/* ---------- boot ---------- */
+async function boot(){
+  TEXT_IDS.forEach(id=>{const v=load(id);if(v!==null&&v!=='')$(id).value=v;});
+  if(load('sample')!=='0')$('students').value=SAMPLE;
+  st.sample=load('sample')!=='0';$('sampleChip').hidden=!st.sample;
+  $('ctypeCustom').hidden=$('ctype').value!=='__custom';
+  if(load('showNo')==='0')$('showNo').checked=false;
+  const t=load('tpl');if(t&&TPL[t])st.tpl=t;
+  const a=load('accent');if(a)st.accent=a;
+  for(const [k,set,clr] of [['logo',im=>st.logo=im,'logoClear'],['sig1',im=>st.sigImg[0]=im,'s1clear'],['sig2',im=>st.sigImg[1]=im,'s2clear']]){const s=load(k);if(s){const im=await imgFromSrc(s);if(im){set(im);$(clr).hidden=false;}}}
+  buildThumbs();syncTpl();render();
+  try{await Promise.all(['700 40px Cinzel','40px "Great Vibes"','italic 500 40px "Cormorant Garamond"','600 40px "Cormorant Garamond"','700 40px "Cormorant Garamond"','800 40px "JetBrains Mono"','600 40px "JetBrains Mono"','300 40px Manrope','400 40px Manrope','500 40px Manrope','700 40px Manrope','800 40px Manrope'].map(f=>document.fonts.load(f)));}catch(e){}
+  render();
+  document.fonts&&document.fonts.ready.then(render);
+}
+boot();
+})();
+</script>
+
+</body>
+</html>
